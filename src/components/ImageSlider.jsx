@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { motion, useMotionValue, useTransform } from 'framer-motion'
+import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion'
 
 // Sample images data - Replace these URLs with your actual images
 const images = [
@@ -61,7 +61,7 @@ export default function ImageSlider() {
   useEffect(() => {
     const timer = setInterval(() => {
       paginate(1)
-    }, 4000)
+    }, 4000) // 4 seconds (1.5s entry + 0.5s display + 2s exit)
     
     return () => clearInterval(timer)
   }, [currentIndex])
@@ -185,44 +185,61 @@ export default function ImageSlider() {
         className="flex items-center justify-center h-[calc(100vh-200px)] relative"
         style={{ perspective: '1500px' }}
       >
-        <motion.div
-          key={currentIndex}
-          className="relative"
-          initial={{ 
-            x: 600,
-            y: 400,
-            rotateZ: 45,
-            rotateY: -90, 
-            opacity: 0, 
-            scale: 0.3 
-          }}
-          animate={{ 
-            x: 0,
-            y: 0,
-            rotateZ: 0,
-            rotateY: 0, 
-            opacity: 1, 
-            scale: 1 
-          }}
-          exit={{ 
-            x: -600,
-            y: 400,
-            rotateZ: -45,
-            rotateY: 90, 
-            opacity: 0, 
-            scale: 0.3 
-          }}
-          transition={{
-            type: 'spring',
-            stiffness: 40,
-            damping: 15,
-            duration: 2.5
-          }}
-          style={{
-            transformStyle: 'preserve-3d',
-            transformOrigin: 'center center'
-          }}
-        >
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentIndex}
+            className="relative"
+            initial={{ 
+              x: 600,
+              y: 400,
+              rotate: 90,
+              opacity: 0, 
+              scale: 0.3 
+            }}
+            animate={{ 
+              x: 0,
+              y: 0,
+              rotate: 0,
+              opacity: 1, 
+              scale: 1 
+            }}
+            exit={{ 
+              x: -500,  // Far left
+              y: 650,   // Bottom
+              rotate: -360,  // Full rotation
+              opacity: 0, 
+              scale: 0.1
+            }}
+            transition={{
+              exit: {
+                x: { 
+                  type: 'tween',
+                  duration: 2,  // Faster exit
+                  ease: [0.43, 0.13, 0.23, 0.96]
+                },
+                y: { 
+                  type: 'tween',
+                  duration: 2,  // Faster exit
+                  ease: [0.17, 0.67, 0.83, 0.67]
+                },
+                rotate: {
+                  type: 'tween',
+                  duration: 2,  // Faster rotation
+                  ease: 'linear'
+                }
+              },
+              initial: {
+                type: 'spring',
+                stiffness: 60,  // Fast entry
+                damping: 15,
+                duration: 1.5
+              }
+            }}
+            style={{
+              transformStyle: 'preserve-3d',
+              transformOrigin: 'center center'
+            }}
+          >
           {/* Single Active Card with white border - LARGER SIZE */}
           <div
             className="relative w-[550px] h-[700px] rounded-3xl overflow-hidden border-[6px] border-white shadow-2xl"
@@ -242,7 +259,7 @@ export default function ImageSlider() {
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.2 }}
+              transition={{ delay: 0.5 }}  // Faster title display
               className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/90 via-black/60 to-transparent"
             >
               <h3 className="text-white text-3xl font-bold drop-shadow-lg">
@@ -251,6 +268,7 @@ export default function ImageSlider() {
             </motion.div>
           </div>
         </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* Thumbnails at Bottom - Semi Circle Layout */}
